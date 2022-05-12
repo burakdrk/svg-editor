@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>SVG Image Viewer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SVG Image Viewer">
+    <meta name="keywords" content="svg">
+    <meta name="author" content="Burak Ege Duruk">
+    <!-- Load jquery, bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <!-- Custom CSS End -->
+</head>
+<body>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" style="text-decoration: none; color:white">SVG Image Viewer</a>
+        </div>
+    </nav>
+
+
+
+    <h3>File Log Panel</h3>
+    <div class="table-responsive">
+        <table class="table table-striped" id="filelogtable">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Image</th>
+                    <th scope="col">File name</th>
+                    <th scope="col">File size</th>
+                    <th scope="col">Rectangles</th>
+                    <th scope="col">Circles</th>
+                    <th scope="col">Paths</th>
+                    <th scope="col">Groups</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <h5 id="isEmptyTable" style="text-align: center;"></h5>
+    </div>
+        
+    <br>
+    <h6 id="gachi">Upload file</h6>
+    <form ref="uploadForm" id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" >
+        <div class="form-group">
+            <input id="upFile" type="file" name="uploadFile" onchange="fileValidation()" class="btn btn-primary btn-sm">
+            <input type="submit" value="Upload" class="btn btn-primary">
+            <button type="button" style="float: right;" class="btn btn-primary" data-toggle="modal" data-target="#createModal">Create SVG</button>
+        </div>
+    </form>
+
+
+
+    <!-- CREATE SVG FORM MODAL -->
+    <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create SVG</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ref="createForm" id="createForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="createForm_name">File name</label>
+                            <input type="text" class="form-control" id="createForm_name" placeholder="File name (no need to add .svg)">
+                        </div>
+                        <div class="form-group">
+                            <label for="createForm_title">Title</label>
+                            <input type="text" class="form-control" id="createForm_title" placeholder="Title">
+                        </div>
+                        <div class="form-group">
+                            <label for="createForm_desc">Description</label>
+                            <input type="text" class="form-control" id="createForm_desc" placeholder="Description">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>    
+                </form>
+            </div>
+        </div>
+      </div>
+
+
+
+
+    <hr>
+
+
+
+    <!-- SVG VIEW PANEL -->
+    <div>
+        <h3 style="display: inline-block;">SVG View Panel</h3>
+        <div class="dropdown" style="float: right;">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Select a file</button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" id="dropdown"></div>
+        </div>
+
+        <br><br>
+
+        <div class="table-responsive" id="svgviewtable">
+            <table class="table table-bordered anan"></table>
+        </div>
+    </div>
+
+
+    
+
+    <button id="editTitleButt" type="button" class="btn btn-primary invisible" data-toggle="modal" data-target="#titleModal">Edit title</button>
+    <div class="modal fade" id="titleModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ref="titleForm" id="titleForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="titleForm_title">Title</label>
+                            <input type="text" class="form-control" id="titleForm_title" placeholder="Title">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>    
+                </form>
+            </div>
+        </div>
+      </div>
+
+    <button id="editDescButt" type="button" class="btn btn-primary invisible" data-toggle="modal" data-target="#descModal">Edit description</button>
+    <div class="modal fade" id="descModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit description</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ref="descForm" id="descForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="descForm_desc">Description</label>
+                            <input type="text" class="form-control" id="descForm_desc" placeholder="Description">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>    
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <button id="rectButt" type="button" class="btn btn-primary invisible" data-toggle="modal" data-target="#rectModal">Add rectangle</button>
+    <div class="modal fade" id="rectModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Rectangles</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ref="rectForm" id="rectForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="rectForm_x">x</label>
+                            <input type="text" class="form-control" id="rectForm_x" placeholder="x">
+                        </div>
+                        <div class="form-group">
+                            <label for="rectForm_y">y</label>
+                            <input type="text" class="form-control" id="rectForm_y" placeholder="y">
+                        </div>
+                        <div class="form-group">
+                            <label for="rectForm_w">Width</label>
+                            <input type="text" class="form-control" id="rectForm_w" placeholder="Width (Must be >= 0)">
+                        </div>
+                        <div class="form-group">
+                            <label for="rectForm_h">Height</label>
+                            <input type="text" class="form-control" id="rectForm_h" placeholder="Height (Must be >= 0)">
+                        </div>
+                        <div class="form-group">
+                            <label for="rectForm_units">Units</label>
+                            <input type="text" class="form-control" id="rectForm_units" placeholder="Units (leave blank if none)">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>    
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <button id="circButt" type="button" class="btn btn-primary invisible" data-toggle="modal" data-target="#circModal">Add circle</button>
+    <div class="modal fade" id="circModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Circles</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ref="circForm" id="circForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="circForm_cx">cx</label>
+                            <input type="text" class="form-control" id="circForm_cx" placeholder="cx">
+                        </div>
+                        <div class="form-group">
+                            <label for="circForm_cy">cy</label>
+                            <input type="text" class="form-control" id="circForm_cy" placeholder="cy">
+                        </div>
+                        <div class="form-group">
+                            <label for="circForm_r">r</label>
+                            <input type="text" class="form-control" id="circForm_r" placeholder="r (Must be >= 0)">
+                        </div>
+                        <div class="form-group">
+                            <label for="circForm_units">Units</label>
+                            <input type="text" class="form-control" id="circForm_units" placeholder="Units (leave blank if none)">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>    
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <button id="scaleButt" type="button" class="btn btn-primary invisible" data-toggle="modal" data-target="#scaleModal">Scale</button>
+    <div class="modal fade" id="scaleModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Scale Shapes</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ref="scaleForm" id="scaleForm">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="scaleForm_type">Type</label>
+                            <select id="scaleForm_type" class="form-control">
+                                <option selected>Rectangles</option>
+                                <option>Circles</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="scaleForm_factor">Factor</label>
+                            <input type="text" class="form-control" id="scaleForm_factor" placeholder="Factor">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Scale</button>
+                    </div>    
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="dropdown" style="float: right;">
+        <button class="btn btn-primary dropdown-toggle invisible" type="button" id="dropdown_comp_butt" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Select a component</button>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown_comp_butt" id="dropdown_comp"></div>
+    </div>
+    <div class="modal fade" id="attrModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="zulu">Attributes</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form ref="attrForm" id="attrForm">
+                    <div class="modal-body">
+                        <ul class="list-group" id="stuff"></ul>
+                        <br>
+                        <div class="form-group">
+                            <label for="attrForm_name">Name</label>
+                            <input type="text" class="form-control" id="attrForm_name" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label for="attrForm_val">Value</label>
+                            <input type="text" class="form-control" id="attrForm_val" placeholder="Value">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Add / Change</button>
+                    </div>
+                </form>    
+            </div>
+        </div>
+    </div>
+
+
+    <br>
+    <br>
+
+
+    
+
+
+
+
+
+
+
+    <!-- Leave me at the bottom of body -->
+    <script src="/index.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
