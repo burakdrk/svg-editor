@@ -1,5 +1,6 @@
 # SVG Editor
 
+# Spring version: https://github.com/burakdrk/svg-editor-spring
 A simple SVG Editor Web Application.
 
 ## Compilation and running
